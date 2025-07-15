@@ -1,3 +1,5 @@
+package com.example.nnos_settings_app
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,7 +29,7 @@ fun SimpleSettingsScreen() {
             text = "設定",
             fontSize = if (isTablet) 32.sp else 24.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(top = 24.dp, bottom = 24.dp)
         )
 
         LazyColumn(
@@ -36,8 +38,22 @@ fun SimpleSettingsScreen() {
         ) {
             item {
                 SettingCard(titleFontSize = itemTitleFontSize, subtitleFontSize = itemSubtitleFontSize, padding = cardPadding,
-                    title = "インターネット",
+                    title = "インターネット、通信",
                     subtitle = "インターネット、モバイルネットワーク、その他通信の設定"
+                )
+            }
+
+            item {
+                SettingCard(titleFontSize = itemTitleFontSize, subtitleFontSize = itemSubtitleFontSize, padding = cardPadding,
+                    title = "サウンド、バイブレーション",
+                    subtitle = "音量、バイブレーションの切り替え、通知・着信音"
+                )
+            }
+
+            item {
+                SettingCard(titleFontSize = itemTitleFontSize, subtitleFontSize = itemSubtitleFontSize, padding = cardPadding,
+                    title = "ディスプレイ",
+                    subtitle = "輝度"
                 )
             }
 
