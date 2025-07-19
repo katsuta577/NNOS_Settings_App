@@ -1,4 +1,4 @@
-package com.example.nnos_settings_app.ui
+package com.example.nnos_settings_app
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

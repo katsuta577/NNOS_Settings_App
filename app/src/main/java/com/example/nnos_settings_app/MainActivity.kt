@@ -1,5 +1,8 @@
 package com.example.nnos_settings_app
 
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,9 +16,42 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.Alignment
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            AppNavigator()
+        }
+    }
+}
 
 @Composable
-fun SimpleSettingsScreen() {
+fun AppNavigator() {
+    val navController = rememberNavController()
+
+    NavHost(navController, startDestination = "settings") {
+        composable("settings") {
+            SimpleSettingsScreen(navController)
+        }
+
+        composable("display") {
+            DisplaySettingsScreaaaaaen()
+        }
+
+        composable("NNOS_Internet") {InternetAndNetworkSettingsScreen()}
+    }
+}
+
+@Composable
+fun SimpleSettingsScreen(navController: NavHostController) {
+    val safeNavController = navController
+
     val isTablet = LocalConfiguration.current.screenWidthDp.dp > 600.dp
 
     val itemTitleFontSize = if (isTablet) 20.sp else 16.sp
@@ -23,8 +59,11 @@ fun SimpleSettingsScreen() {
     val cardPadding = if (isTablet) 24.dp else 16.dp
 
     Column(
-        modifier = Modifier.fillMaxSize().background(Color(0xFFD3D3D3)).padding(horizontal = cardPadding, vertical = 24.dp)) {
-
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFD3D3D3))
+            .padding(horizontal = cardPadding, vertical = 24.dp)
+    ) {
         Text(
             text = "設定",
             fontSize = if (isTablet) 32.sp else 24.sp,
@@ -37,37 +76,13 @@ fun SimpleSettingsScreen() {
             modifier = Modifier.fillMaxSize()
         ) {
             item {
-                SettingCard(titleFontSize = itemTitleFontSize, subtitleFontSize = itemSubtitleFontSize, padding = cardPadding,
+                SettingCard(
+                    titleFontSize = itemTitleFontSize,
+                    subtitleFontSize = itemSubtitleFontSize,
+                    padding = cardPadding,
                     title = "インターネット、通信",
-                    subtitle = "インターネット、モバイルネットワーク、その他通信の設定"
-                )
-            }
-
-            item {
-                SettingCard(titleFontSize = itemTitleFontSize, subtitleFontSize = itemSubtitleFontSize, padding = cardPadding,
-                    title = "サウンド、バイブレーション",
-                    subtitle = "音量、バイブレーションの切り替え、通知・着信音"
-                )
-            }
-
-            item {
-                SettingCard(titleFontSize = itemTitleFontSize, subtitleFontSize = itemSubtitleFontSize, padding = cardPadding,
-                    title = "ディスプレイ",
-                    subtitle = "輝度"
-                )
-            }
-
-            item {
-                SettingCard(titleFontSize = itemTitleFontSize, subtitleFontSize = itemSubtitleFontSize, padding = cardPadding,
-                    title = "カスタマイズ",
-                    subtitle = "壁紙、通知・着信音、テーマの設定"
-                )
-            }
-
-            item {
-                SettingCard(titleFontSize = itemTitleFontSize, subtitleFontSize = itemSubtitleFontSize, padding = cardPadding,
-                    title = "その他",
-                    subtitle = "アプリ、バッテリー、ストレージ、セキュリティ、システム情報の設定"
+                    subtitle = "インターネット、モバイルネットワーク、その他通信の設定",
+                    onClick = {safeNavController.navigate("NNOS_Internet")}
                 )
             }
         }
@@ -80,7 +95,8 @@ fun SettingCard(
     subtitle: String,
     titleFontSize: TextUnit,
     subtitleFontSize: TextUnit,
-    padding: Dp
+    padding: Dp,
+    onClick: () -> Unit
 ) {
     Surface(
         shape = RoundedCornerShape(8.dp),
@@ -89,11 +105,11 @@ fun SettingCard(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clickable { /* ここに処理 */ }
+            .clickable { onClick() }
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = padding, vertical = 16.dp)) {
-
+            modifier = Modifier.padding(horizontal = padding, vertical = 16.dp)
+        ) {
             Text(
                 text = title,
                 fontSize = titleFontSize,
@@ -112,14 +128,28 @@ fun SettingCard(
     }
 }
 
+@Composable
+fun DisplaySettingsScreaaaaaen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
+        Text("ディスプレイ設定画面", fontSize = 24.sp)
+    }
+}
+
 @Preview(showBackground = true, widthDp = 400, heightDp = 800, name = "Phone Preview")
 @Composable
 fun NNOS_Settings_App_MainActivity_Preview_Phone() {
-    SimpleSettingsScreen()
+    val navController = rememberNavController()
+    SimpleSettingsScreen(navController = navController)
 }
 
 @Preview(showBackground = true, widthDp = 1200, heightDp = 800, name = "Tablet Preview")
 @Composable
 fun NNOS_Settings_App_MainActivity_Preview_Tablet() {
-    SimpleSettingsScreen()
+    val navController = rememberNavController()
+    SimpleSettingsScreen(navController = navController)
 }
