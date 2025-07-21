@@ -57,4 +57,16 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation("androidx.navigation:navigation-compose:2.7.7")
+
+// Compose Material Design
+    implementation("androidx.compose.material:material:1.6.8") // または最新の安定版
+    implementation("androidx.compose.material:material-icons-extended:1.6.8") // SignalWifi4Bar, SignalWifiOff などのアイコン用
+
+// Compose UI ツーリング（@Preview など）を使用する場合
+    implementation("androidx.compose.ui:ui-tooling-preview:1.6.8") // または最新の安定版
+    debugImplementation("androidx.compose.ui:ui-tooling:1.6.8") // ツーリング機能用
+
+// activity-compose 用
+    implementation("androidx.activity:activity-compose:1.9.0") // または最新の安定版
+    implementation ("androidx.core:core-ktx:1.13.1") // 最新に合わせて
 }

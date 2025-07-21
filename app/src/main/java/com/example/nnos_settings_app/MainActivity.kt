@@ -1,5 +1,6 @@
 package com.example.nnos_settings_app
 
+import WifiSelectorApp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,15 +22,30 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+
+
+import android.Manifest
+import android.os.Build
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import androidx.core.app.ActivityCompat
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            AppNavigator()
+        val perms = arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.CHANGE_NETWORK_STATE
+        )
+        perms.forEach {
+            if (ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED)
+                ActivityCompat.requestPermissions(this, perms, 11)
         }
+        setContent { AppNavigator() }
     }
 }
+
 
 @Composable
 fun AppNavigator() {
@@ -44,7 +60,9 @@ fun AppNavigator() {
             DisplaySettingsScreaaaaaen()
         }
 
-        composable("NNOS_Internet") {InternetAndNetworkSettingsScreen()}
+        composable("NNOS_Internet") {WifiSelectorApp(
+            context = LocalContext.current
+        )}
     }
 }
 
@@ -65,7 +83,7 @@ fun SimpleSettingsScreen(navController: NavHostController) {
             .padding(horizontal = cardPadding, vertical = 24.dp)
     ) {
         Text(
-            text = "設定",
+            text = "Settings",
             fontSize = if (isTablet) 32.sp else 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 24.dp, bottom = 24.dp)
@@ -80,8 +98,8 @@ fun SimpleSettingsScreen(navController: NavHostController) {
                     titleFontSize = itemTitleFontSize,
                     subtitleFontSize = itemSubtitleFontSize,
                     padding = cardPadding,
-                    title = "インターネット、通信",
-                    subtitle = "インターネット、モバイルネットワーク、その他通信の設定",
+                    title = "Internet, and Network",
+                    subtitle = "Internet, and Other Network Settings",
                     onClick = {safeNavController.navigate("NNOS_Internet")}
                 )
             }
