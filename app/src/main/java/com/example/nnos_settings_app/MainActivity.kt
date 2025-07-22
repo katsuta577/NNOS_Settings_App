@@ -60,9 +60,7 @@ fun AppNavigator() {
             DisplaySettingsScreaaaaaen()
         }
 
-        composable("NNOS_Internet") {WifiSelectorApp(
-            context = LocalContext.current
-        )}
+        composable("NNOS_Internet") {Bluetooth()}
     }
 }
 

@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.*
 import android.os.Build
+import android.content.pm.PackageManager
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -17,8 +19,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import android.content.pm.PackageManager
-import android.util.Log
 
 @Composable
 fun Bluetooth() {
@@ -40,26 +40,61 @@ fun Bluetooth() {
         ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
 
+    // ↓ ここで startDiscovery をラムダとして定義
+    val startDiscovery = rememberUpdatedState {
+        try {
+            devices.clear()
+            bluetoothAdapter?.cancelDiscovery()
+            bluetoothAdapter?.startDiscovery()
+
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(ctx: Context?, intent: Intent?) {
+                    val action = intent?.action
+                    if (action == BluetoothDevice.ACTION_FOUND || action == BluetoothDevice.ACTION_NAME_CHANGED) {
+                        val device = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                        device?.let {
+                            val existing = devices.find { it.address == device.address }
+                            if (existing == null) {
+                                devices.add(device)
+                            }
+                        }
+                    }
+                }
+            }
+
+            val filter = IntentFilter().apply {
+                addAction(BluetoothDevice.ACTION_FOUND)
+                addAction(BluetoothDevice.ACTION_NAME_CHANGED)
+            }
+
+            context.registerReceiver(receiver, filter)
+        } catch (e: SecurityException) {
+            Log.e("BluetoothScan", "Missing permissions: ${e.message}")
+        }
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { perms ->
         if (perms.all { it.value }) {
-            startDiscovery(bluetoothAdapter, devices, context)
+            startDiscovery.value()
         }
     }
 
+    // ← ここで呼ぶときも .value() とする！
     LaunchedEffect(Unit) {
         if (isPermissionRequired && !permissionGranted) {
             permissionLauncher.launch(permissions)
         } else {
-            startDiscovery(bluetoothAdapter, devices, context)
+            startDiscovery.value()
         }
     }
 
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(16.dp)) {
-
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
         Text(
             text = "Bluetooth Devices",
             fontSize = 24.sp,
@@ -67,56 +102,44 @@ fun Bluetooth() {
         )
 
         LazyColumn {
-            items(devices.filter { it.name?.isNotBlank() == true }) { device ->
+            items(
+                devices
+                    .filter { it.name?.isNotBlank() == true }
+                    .sortedBy { it.name?.lowercase() }
+            ) { device ->
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
                 ) {
                     Text(text = device.name ?: "Unknown Device")
-                    Text(text = device.address, style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        text = device.address,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+
+                    // ペアリング済みでなければボタンを表示
+                    if (device.bondState != BluetoothDevice.BOND_BONDED) {
+                        Button(
+                            onClick = {
+                                try {
+                                    Log.d("Bluetooth", "Trying to pair with ${device.name}")
+                                    val method = device.javaClass.getMethod("createBond")
+                                    method.invoke(device)
+                                } catch (e: Exception) {
+                                    Log.e("Bluetooth", "Pairing failed: ${e.message}")
+                                }
+                            },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            Text("接続（ペアリング）")
+                        }
+                    }
                 }
                 Divider()
             }
         }
-
-    }
-}
-
-private fun startDiscovery(
-    bluetoothAdapter: BluetoothAdapter?,
-    devices: MutableList<BluetoothDevice>,
-    context: Context
-) {
-    try {
-        devices.clear()
-        bluetoothAdapter?.cancelDiscovery()
-        bluetoothAdapter?.startDiscovery()
-
-        val receiver = object : BroadcastReceiver() {
-            override fun onReceive(ctx: Context?, intent: Intent?) {
-                val action = intent?.action
-                if (action == BluetoothDevice.ACTION_FOUND || action == BluetoothDevice.ACTION_NAME_CHANGED) {
-                    val device = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
-                    device?.let {
-                        // すでにアドレス一致するものがあれば名前を更新（nameが後から来ることがある）
-                        val existing = devices.find { it.address == device.address }
-                        if (existing == null) {
-                            devices.add(device)
-                        }
-                    }
-                }
-            }
-        }
-
-        val filter = IntentFilter().apply {
-            addAction(BluetoothDevice.ACTION_FOUND)
-            addAction(BluetoothDevice.ACTION_NAME_CHANGED) // ← 追加で監視！
-        }
-
-        context.registerReceiver(receiver, filter)
-    } catch (e: SecurityException) {
-        Log.e("BluetoothScan", "Missing permissions: ${e.message}")
     }
 }
 
