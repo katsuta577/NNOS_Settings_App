@@ -120,11 +120,11 @@ fun Bluetooth() {
                     )
 
                     // ペアリング済みでなければボタンを表示
+
                     if (device.bondState != BluetoothDevice.BOND_BONDED) {
                         Button(
                             onClick = {
                                 try {
-                                    Log.d("Bluetooth", "Trying to pair with ${device.name}")
                                     val method = device.javaClass.getMethod("createBond")
                                     method.invoke(device)
                                 } catch (e: Exception) {
@@ -135,7 +135,38 @@ fun Bluetooth() {
                         ) {
                             Text("接続（ペアリング）")
                         }
+                    } else {
+                        // ペアリング済みなら
+                        if (device.isConnected()) {
+                            Button(
+                                onClick = {
+                                    Log.d("Bluetooth", "接続解除を要求（実処理は未対応）")
+                                    bluetoothAdapter?.cancelDiscovery()
+                                    // 明示的に切断するAPIがないため、必要に応じてここにBLEやA2DP処理を追加
+                                },
+                                modifier = Modifier.padding(top = 8.dp)
+                            ) {
+                                Text("接続解除")
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                try {
+                                    val method = device.javaClass.getMethod("removeBond")
+                                    method.invoke(device)
+                                } catch (e: Exception) {
+                                    Log.e("Bluetooth", "Unpairing failed: ${e.message}")
+                                }
+                            },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            Text("ペアリング解除")
+                        }
                     }
+
+
+
                 }
                 Divider()
             }
@@ -143,3 +174,11 @@ fun Bluetooth() {
     }
 }
 
+fun BluetoothDevice.isConnected(): Boolean {
+    return try {
+        val method = this.javaClass.getMethod("isConnected")
+        method.invoke(this) as? Boolean ?: false
+    } catch (e: Exception) {
+        false
+    }
+}
