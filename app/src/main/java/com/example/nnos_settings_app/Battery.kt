@@ -1,16 +1,33 @@
 package com.example.nnos_settings_app
 
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
-fun BatterySettingsScreen() {
+fun BatterySettingsScreen1234() {
+    val context = LocalContext.current
+    var batteryLevel by remember { mutableStateOf(0) }
     var isBatterySaverOn by remember { mutableStateOf(false) }
+
+    // バッテリーレベルの取得（1回だけ）
+    LaunchedEffect(Unit) {
+        val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        val batteryStatus = context.registerReceiver(null, intentFilter)
+        val level = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+        val scale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+
+        if (level in 0..100 && scale > 0) {
+            batteryLevel = ((level.toFloat() / scale.toFloat()) * 100).toInt()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -20,8 +37,8 @@ fun BatterySettingsScreen() {
     ) {
         Text("Battery", style = MaterialTheme.typography.headlineSmall)
 
-        // バッテリーレベル（仮）
-        Text("Battery level: 76%", style = MaterialTheme.typography.bodyLarge)
+        // 実際のバッテリーレベルを表示
+        Text("Battery level: $batteryLevel%", style = MaterialTheme.typography.bodyLarge)
 
         // バッテリーセーバー
         Row(
@@ -36,7 +53,7 @@ fun BatterySettingsScreen() {
             )
         }
 
-        // 使用状況
+        // 使用状況（仮）
         Text("Battery usage", style = MaterialTheme.typography.titleMedium)
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -48,7 +65,6 @@ fun BatterySettingsScreen() {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // 詳細設定など
         Button(
             onClick = { /* 未実装 */ },
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -56,16 +72,4 @@ fun BatterySettingsScreen() {
             Text("Battery Settings")
         }
     }
-}
-
-@Preview(showBackground = true, widthDp = 400, heightDp = 800, name = "Phone Preview")
-@Composable
-fun NNOS_Settings_App_Battery_Preview_Phone() {
-    BatterySettingsScreen()
-}
-
-@Preview(showBackground = true, widthDp = 1200, heightDp = 800, name = "Tablet Preview")
-@Composable
-fun NNOS_Settings_App_Battery_Preview_Tablet() {
-    BatterySettingsScreen()
 }

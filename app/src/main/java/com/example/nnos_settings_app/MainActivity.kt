@@ -1,6 +1,5 @@
 package com.example.nnos_settings_app
 
-import WifiSelectorApp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,12 +20,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalContext
-
-
 import android.Manifest
-import android.os.Build
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.core.app.ActivityCompat
@@ -56,11 +50,7 @@ fun AppNavigator() {
             SimpleSettingsScreen(navController)
         }
 
-        composable("display") {
-            DisplaySettingsScreaaaaaen()
-        }
-
-        composable("NNOS_Internet") {Bluetooth()}
+        composable("Battery") {BatterySettingsScreen1234()}
     }
 }
 
@@ -98,7 +88,7 @@ fun SimpleSettingsScreen(navController: NavHostController) {
                     padding = cardPadding,
                     title = "Internet, and Network",
                     subtitle = "Internet, and Other Network Settings",
-                    onClick = {safeNavController.navigate("NNOS_Internet")}
+                    onClick = {safeNavController.navigate("Battery")}
                 )
             }
         }
@@ -141,18 +131,6 @@ fun SettingCard(
                 color = Color(0xFF5A5A5A)
             )
         }
-    }
-}
-
-@Composable
-fun DisplaySettingsScreaaaaaen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("ディスプレイ設定画面", fontSize = 24.sp)
     }
 }
 
