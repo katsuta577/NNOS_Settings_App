@@ -164,9 +164,6 @@ fun Bluetooth() {
                             Text("ペアリング解除")
                         }
                     }
-
-
-
                 }
                 Divider()
             }
