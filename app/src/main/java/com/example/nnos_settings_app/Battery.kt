@@ -1,5 +1,7 @@
 package com.example.nnos_settings_app
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
@@ -12,20 +14,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 
 @Composable
-fun BatterySettingsScreen1234() {
+fun BatterySettingsScreen() {
     val context = LocalContext.current
     var batteryLevel by remember { mutableStateOf(0) }
     var isBatterySaverOn by remember { mutableStateOf(false) }
 
-    // バッテリーレベルの取得（1回だけ）
-    LaunchedEffect(Unit) {
+    // リアルタイムでバッテリーレベルを受け取る
+    DisposableEffect(Unit) {
         val intentFilter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-        val batteryStatus = context.registerReceiver(null, intentFilter)
-        val level = batteryStatus?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
-        val scale = batteryStatus?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
 
-        if (level in 0..100 && scale > 0) {
-            batteryLevel = ((level.toFloat() / scale.toFloat()) * 100).toInt()
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+
+                if (level in 0..100 && scale > 0) {
+                    batteryLevel = ((level.toFloat() / scale.toFloat()) * 100).toInt()
+                }
+            }
+        }
+
+        context.registerReceiver(receiver, intentFilter)
+
+        onDispose {
+            context.unregisterReceiver(receiver)
         }
     }
 
@@ -37,10 +49,8 @@ fun BatterySettingsScreen1234() {
     ) {
         Text("Battery", style = MaterialTheme.typography.headlineSmall)
 
-        // 実際のバッテリーレベルを表示
         Text("Battery level: $batteryLevel%", style = MaterialTheme.typography.bodyLarge)
 
-        // バッテリーセーバー
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -53,7 +63,6 @@ fun BatterySettingsScreen1234() {
             )
         }
 
-        // 使用状況（仮）
         Text("Battery usage", style = MaterialTheme.typography.titleMedium)
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -66,7 +75,10 @@ fun BatterySettingsScreen1234() {
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
-            onClick = { /* 未実装 */ },
+            onClick = {
+                val intent = Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS)
+                context.startActivity(intent)
+            },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text("Battery Settings")

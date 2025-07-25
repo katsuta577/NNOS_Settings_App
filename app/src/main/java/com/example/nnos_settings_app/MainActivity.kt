@@ -50,7 +50,7 @@ fun AppNavigator() {
             SimpleSettingsScreen(navController)
         }
 
-        composable("Battery") {BatterySettingsScreen1234()}
+        composable("Battery") {BatterySettingsScreen()}
     }
 }
 
