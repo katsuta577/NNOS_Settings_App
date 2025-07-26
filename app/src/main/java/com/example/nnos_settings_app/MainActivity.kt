@@ -50,7 +50,10 @@ fun AppNavigator() {
             SimpleSettingsScreen(navController)
         }
 
+        composable("Internet") {InternetAndNetworkSettingsScreen()}
         composable("Battery") {BatterySettingsScreen()}
+        composable("Sound") {SoundSettingsScreen()}
+
     }
 }
 
@@ -68,7 +71,7 @@ fun SimpleSettingsScreen(navController: NavHostController) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFD3D3D3))
-            .padding(horizontal = cardPadding, vertical = 24.dp)
+            .padding(horizontal = 24.dp, vertical = 24.dp)
     ) {
         Text(
             text = "Settings",
@@ -88,6 +91,24 @@ fun SimpleSettingsScreen(navController: NavHostController) {
                     padding = cardPadding,
                     title = "Internet, and Network",
                     subtitle = "Internet, and Other Network Settings",
+                    onClick = {safeNavController.navigate("Internet")}
+                )
+
+                SettingCard(
+                    titleFontSize = itemTitleFontSize,
+                    subtitleFontSize = itemSubtitleFontSize,
+                    padding = cardPadding,
+                    title = "Sounds",
+                    subtitle = "Sound Settings",
+                    onClick = {safeNavController.navigate("Sound")}
+                )
+
+                SettingCard(
+                    titleFontSize = itemTitleFontSize,
+                    subtitleFontSize = itemSubtitleFontSize,
+                    padding = cardPadding,
+                    title = "Battery",
+                    subtitle = "Battery Settings",
                     onClick = {safeNavController.navigate("Battery")}
                 )
             }
