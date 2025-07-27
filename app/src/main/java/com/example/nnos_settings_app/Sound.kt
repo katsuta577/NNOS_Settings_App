@@ -24,17 +24,37 @@ fun SoundSettingsScreen() {
     val audioManager = remember {
         context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     }
+
     val maxMediaVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+    val maxRingVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING)
 
     var selectedMode by remember { mutableStateOf("sound") }
 
-    // メディア音量の状態をAudioManagerの現在値から初期化
     var mediaVolume by remember {
         mutableStateOf(audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat())
     }
-    var ringVolume by remember { mutableFloatStateOf(0.5f) }
-    var notificationVolume by remember { mutableFloatStateOf(0.6f) }
-    var systemVolume by remember { mutableFloatStateOf(0.4f) }
+
+    var ringVolume by remember {
+        mutableStateOf(
+            audioManager.getStreamVolume(AudioManager.STREAM_RING).toFloat()
+        )
+    }
+
+    val maxNotificationVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_NOTIFICATION)
+
+    var notificationVolume by remember {
+        mutableStateOf(
+            audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION).toFloat()
+        )
+    }
+
+    val maxAlarmVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+
+    var alarmVolume by remember {
+        mutableStateOf(
+            audioManager.getStreamVolume(AudioManager.STREAM_ALARM).toFloat()
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -49,7 +69,6 @@ fun SoundSettingsScreen() {
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        // ===== サウンドモード =====
         Text("サウンドモード", fontSize = labelFontSize, fontWeight = FontWeight.Medium)
         Column {
             listOf(
@@ -65,7 +84,14 @@ fun SoundSettingsScreen() {
                 ) {
                     RadioButton(
                         selected = selectedMode == value,
-                        onClick = { selectedMode = value }
+                        onClick = {
+                            selectedMode = value
+                            when (value) {
+                                "sound" -> audioManager.ringerMode = AudioManager.RINGER_MODE_NORMAL
+                                "vibrate" -> audioManager.ringerMode = AudioManager.RINGER_MODE_VIBRATE
+                                "silent" -> audioManager.ringerMode = AudioManager.RINGER_MODE_SILENT
+                            }
+                        }
                     )
                     Text(text = label, fontSize = labelFontSize)
                 }
@@ -74,7 +100,6 @@ fun SoundSettingsScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ===== メディア音量スライダー（実際に音量を変える） =====
         SoundSlider(
             label = "メディア音量",
             value = mediaVolume / maxMediaVolume,
@@ -89,10 +114,49 @@ fun SoundSettingsScreen() {
             labelFontSize = labelFontSize
         )
 
-        // ===== その他の音量スライダー（UIのみ） =====
-        SoundSlider("着信音", ringVolume, { ringVolume = it }, labelFontSize)
-        SoundSlider("通知音", notificationVolume, { notificationVolume = it }, labelFontSize)
-        SoundSlider("システム音", systemVolume, { systemVolume = it }, labelFontSize)
+        // ✅ 着信音量スライダー（実際に変更）
+        SoundSlider(
+            label = "着信音",
+            value = ringVolume / maxRingVolume,
+            onValueChange = {
+                ringVolume = it * maxRingVolume
+                audioManager.setStreamVolume(
+                    AudioManager.STREAM_RING,
+                    ringVolume.toInt(),
+                    AudioManager.FLAG_SHOW_UI
+                )
+            },
+            labelFontSize = labelFontSize
+        )
+
+        // 他はまだUIだけ（通知音、システム音）
+        SoundSlider(
+            label = "通知音",
+            value = notificationVolume / maxNotificationVolume,
+            onValueChange = {
+                notificationVolume = it * maxNotificationVolume
+                audioManager.setStreamVolume(
+                    AudioManager.STREAM_NOTIFICATION,
+                    notificationVolume.toInt(),
+                    AudioManager.FLAG_SHOW_UI
+                )
+            },
+            labelFontSize = labelFontSize
+        )
+
+        SoundSlider(
+            label = "アラーム音",
+            value = alarmVolume / maxAlarmVolume,
+            onValueChange = {
+                alarmVolume = it * maxAlarmVolume
+                audioManager.setStreamVolume(
+                    AudioManager.STREAM_ALARM,
+                    alarmVolume.toInt(),
+                    AudioManager.FLAG_SHOW_UI
+                )
+            },
+            labelFontSize = labelFontSize
+        )
     }
 }
 
